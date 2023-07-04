@@ -26,21 +26,26 @@
   template:
     src: server
     dest: /etc/nginx/sites-available/default
+  notify:
+    - "check nginx"
+    - "nginx reload"
 
 - name: Create NGINX Symlink
   file:
     src: /etc/nginx/sites-available/default
     dest: /etc/nginx/sites-enabled/default
     state: link
+  notify: "check nginx"
 
 - name: Copy web template
   template:
     src: web
     dest: /var/www/html/index.html
-  register: site_content
+  notify:
+    - "check nginx"
+    - "nginx reload"
 
-- name: Reload NGINX
-  service:
+- name: Restart service nginx, if not started
+  ansible.builtin.service:
     name: nginx
-    state: started
-  when: site_content is changed
+    state: restarted
